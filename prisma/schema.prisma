@@ -1,0 +1,19 @@
+generator kysely {
+    provider = "prisma-kysely"
+    // provider = "pnpm dlx prisma-generator-kysely"
+    // output   = "./types"
+    output   = "../src/server/db"
+    // fileName = "types.ts"
+}
+
+datasource db {
+    provider     = "mysql"
+    url          = env("DATABASE_URL")
+    relationMode = "prisma"
+}
+
+model Example {
+    id   Int    @id @default(autoincrement())
+    name String
+    age  Int
+}
