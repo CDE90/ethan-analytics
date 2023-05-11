@@ -1,9 +1,6 @@
 generator kysely {
     provider = "prisma-kysely"
-    // provider = "pnpm dlx prisma-generator-kysely"
-    // output   = "./types"
     output   = "../src/server/db"
-    // fileName = "types.ts"
 }
 
 datasource db {
