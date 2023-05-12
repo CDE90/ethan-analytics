@@ -2,6 +2,8 @@ import Image from "next/image";
 import { db } from "~/server/db";
 import { z } from "zod";
 
+export const runtime = "edge";
+
 const schema = z.object({
     name: z.string().min(1),
     age: z.number().int().min(0),
