@@ -4,6 +4,9 @@ dependencies:
   '@clerk/nextjs':
     specifier: ^4.18.1
     version: 4.18.1(next@13.4.1)(react-dom@18.2.0)(react@18.2.0)
+  '@clerk/themes':
+    specifier: ^1.7.1
+    version: 1.7.1(react@18.2.0)
   '@planetscale/database':
     specifier: ^1.7.0
     version: 1.7.0
@@ -166,6 +169,15 @@ packages:
       react: '>=16'
     dependencies:
       glob-to-regexp: 0.4.1
+      react: 18.2.0
+    dev: false
+
+  /@clerk/themes@1.7.1(react@18.2.0):
+    resolution: {integrity: sha512-6Yhj+k12zts7sjUOtcvmGEFYE4tE4hJZX3yqmUcwC/MsCalmLti+OOtOyP13sHWPDMp/To40sx34jKEO6MJHeQ==}
+    engines: {node: '>=14'}
+    peerDependencies:
+      react: '>=16'
+    dependencies:
       react: 18.2.0
     dev: false
 
