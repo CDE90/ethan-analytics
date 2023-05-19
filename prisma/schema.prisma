@@ -14,3 +14,39 @@ model Example {
     name String
     age  Int
 }
+
+model User {
+    id      Int    @id @default(autoincrement())
+    clerkId String @unique
+
+    Website Website[]
+}
+
+model Website {
+    id   Int    @id @default(autoincrement())
+    url  String @unique
+    name String
+
+    user   User    @relation(fields: [userId], references: [id])
+    userId Int
+    events Event[]
+
+    @@index([userId, url])
+}
+
+model Event {
+    id        Int      @id @default(autoincrement())
+    timestamp DateTime @default(now())
+    url       String
+    userAgent String?
+    referrer  String?
+    region    String?
+    city      String?
+    country   String?
+    eventType String
+
+    website Website @relation(fields: [host], references: [url])
+    host    String  @map("websiteUrl")
+
+    @@index([host, url])
+}
