@@ -30,9 +30,12 @@ async fn event_handler(
     let referrer = &event_req.referrer;
     let page = &event_req.page;
 
-    let user_agent = req.headers().get("user-agent").unwrap().to_str().unwrap();
+    let user_agent = match req.headers().get("user-agent") {
+        Some(ua) => ua.to_str().unwrap_or(""),
+        None => "",
+    };
 
-    client
+    match client
         .event()
         .create(
             page.to_string(),
@@ -45,14 +48,24 @@ async fn event_handler(
         )
         .exec()
         .await
-        .unwrap();
+    {
+        Ok(_) => (),
+        Err(_) => {
+            return HttpResponse::InternalServerError().json(());
+        }
+    };
 
     HttpResponse::Ok().json(())
 }
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let client = web::Data::new(PrismaClient::_builder().build().await.unwrap());
+    let client = web::Data::new(
+        PrismaClient::_builder()
+            .build()
+            .await
+            .expect("Unable to connect to database"),
+    );
 
     println!("Listening on port 8080, http://localhost:8080");
 
