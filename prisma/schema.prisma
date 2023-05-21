@@ -1,6 +1,11 @@
 generator kysely {
-    provider = "prisma-kysely"
+    provider = "pnpm prisma-kysely"
     output   = "../src/server/db"
+}
+
+generator rust {
+    provider = "cargo prisma"
+    output   = "../src/db.rs"
 }
 
 datasource db {
@@ -37,7 +42,7 @@ model Website {
 model Event {
     id        Int      @id @default(autoincrement())
     timestamp DateTime @default(now())
-    url       String
+    page      String
     userAgent String?
     referrer  String?
     region    String?
@@ -46,7 +51,7 @@ model Event {
     eventType String
 
     website Website @relation(fields: [host], references: [url])
-    host    String  @map("websiteUrl")
+    host    String
 
-    @@index([host, url])
+    @@index([host, page])
 }

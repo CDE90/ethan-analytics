@@ -6,14 +6,14 @@ export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 export type Event = {
     id: Generated<number>;
     timestamp: Generated<Timestamp>;
-    url: string;
+    page: string;
     userAgent: string | null;
     referrer: string | null;
     region: string | null;
     city: string | null;
     country: string | null;
     eventType: string;
-    websiteUrl: string;
+    host: string;
 };
 export type Example = {
     id: Generated<number>;
