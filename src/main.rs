@@ -1,8 +1,4 @@
-use actix_web::{
-    dev::Payload, get, post, web, App, FromRequest, HttpRequest, HttpResponse, HttpServer,
-    Responder,
-};
-use actix_web_location::Location;
+use actix_web::{get, post, web, App, HttpRequest, HttpResponse, HttpServer, Responder};
 use serde::Deserialize;
 
 #[allow(warnings, unused)]
@@ -16,14 +12,6 @@ struct EventRequest {
     domain: String,
     event: String,
     page: String,
-}
-
-fn option_from_string(string: String) -> Option<String> {
-    if string == "" {
-        None
-    } else {
-        Some(string)
-    }
 }
 
 #[get("/")]
@@ -44,18 +32,6 @@ async fn event_handler(
 
     let user_agent = req.headers().get("user-agent").unwrap().to_str().unwrap();
 
-    let location = Location::from_request(&req, &mut Payload::None)
-        .await
-        .unwrap();
-
-    let region_str = location.region();
-    let country_str = location.country();
-    let city_str = location.city();
-
-    let region = option_from_string(region_str);
-    let country = option_from_string(country_str);
-    let city = option_from_string(city_str);
-
     client
         .event()
         .create(
@@ -65,9 +41,6 @@ async fn event_handler(
             vec![
                 event::referrer::set(referrer.clone()),
                 event::user_agent::set(Some(user_agent.to_string())),
-                event::region::set(region),
-                event::country::set(country),
-                event::city::set(city),
             ],
         )
         .exec()

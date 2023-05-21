@@ -184,20 +184,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "actix-web-location"
-version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "164955c1ad8d0609bf78c82d9f4c718c765bba1ec48923fb739dfbfefdc34b6d"
-dependencies = [
- "actix-web",
- "anyhow",
- "async-trait",
- "futures",
- "lazy_static",
- "thiserror",
-]
-
-[[package]]
 name = "addr2line"
 version = "0.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1052,7 +1038,6 @@ name = "ethan-analytics"
 version = "0.1.0"
 dependencies = [
  "actix-web",
- "actix-web-location",
  "prisma-client-rust",
  "serde",
 ]
