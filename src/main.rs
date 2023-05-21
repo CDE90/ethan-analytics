@@ -3,7 +3,6 @@ use actix_web::{
     Responder,
 };
 use actix_web_location::Location;
-use dotenvy::dotenv;
 use serde::Deserialize;
 
 #[allow(warnings, unused)]
@@ -80,13 +79,9 @@ async fn event_handler(
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    dotenv().ok();
-
-    let port = std::env::var("PORT").unwrap_or("3001".to_string());
-
     let client = web::Data::new(PrismaClient::_builder().build().await.unwrap());
 
-    println!("Listening on port {}", port);
+    println!("Listening on port 8080, http://localhost:8080");
 
     HttpServer::new(move || {
         App::new()
@@ -94,7 +89,7 @@ async fn main() -> std::io::Result<()> {
             .service(index)
             .service(event_handler)
     })
-    .bind(format!("0.0.0.0:{}", port))?
+    .bind(format!("0.0.0.0:{}", 8080))?
     .run()
     .await
 }

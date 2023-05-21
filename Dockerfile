@@ -39,4 +39,6 @@ RUN apt update \
 
 COPY --from=builder /ethan-analytics/target/release/ethan-analytics .
 
+EXPOSE 8080
+
 CMD ["./ethan-analytics"]
