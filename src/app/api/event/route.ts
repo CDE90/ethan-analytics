@@ -48,7 +48,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             city,
             country,
             referrer: data.referrer,
-            websiteUrl: data.domain,
+            host: data.domain,
             eventType: data.event,
         })
         .execute();
