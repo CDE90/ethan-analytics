@@ -6,7 +6,7 @@ export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 export type Event = {
     id: Generated<number>;
     timestamp: Generated<Timestamp>;
-    url: string;
+    page: string;
     userAgent: string | null;
     referrer: string | null;
     region: string | null;

@@ -42,7 +42,7 @@ model Website {
 model Event {
     id        Int      @id @default(autoincrement())
     timestamp DateTime @default(now())
-    url       String
+    page      String
     userAgent String?
     referrer  String?
     region    String?
@@ -51,7 +51,7 @@ model Event {
     eventType String
 
     website Website @relation(fields: [host], references: [url])
-    host    String  @map("websiteUrl")
+    host    String
 
-    @@index([host, url])
+    @@index([host, page])
 }

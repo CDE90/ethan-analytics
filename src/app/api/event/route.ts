@@ -8,6 +8,7 @@ const requestSchema = z.object({
     referrer: z.string().url().optional(),
     domain: z.string(),
     event: z.string(),
+    page: z.string().url(),
 });
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -31,8 +32,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // get the user agent
     const userAgent = request.headers.get("user-agent");
-    // get the url
-    const url = request.url;
     // get the location
     const location = request.geo;
     const region = location?.region || null;
@@ -42,7 +41,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     await db
         .insertInto("Event")
         .values({
-            url,
             userAgent,
             region,
             city,
@@ -50,6 +48,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             referrer: data.referrer,
             host: data.domain,
             eventType: data.event,
+            page: data.page,
         })
         .execute();
 
