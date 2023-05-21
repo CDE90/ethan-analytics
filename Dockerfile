@@ -35,16 +35,8 @@ FROM debian:buster-slim
 
 
 RUN apt update \
-    && apt install -y iproute2 libssl-dev ca-certificates \
-    && useradd -m -d /home/container container
+    && apt install -y iproute2 libssl-dev ca-certificates
 
-USER container
-ENV USER=container HOME=/home/container CARGO_HOME=/home/container/.cargo
-WORKDIR /home/container
+COPY --from=builder /ethan-analytics/target/release/ethan-analytics .
 
-COPY --from=builder /ethan-analytics/target/release/ethan-analytics /home/container/ethan-analytics
-COPY ./entrypoint.sh /entrypoint.sh
-
-EXPOSE 3001
-
-CMD ["/bin/bash", "/entrypoint.sh"]
+CMD ["./ethan-analytics"]

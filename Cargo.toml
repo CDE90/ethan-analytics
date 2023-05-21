@@ -8,6 +8,7 @@ edition = "2021"
 serde = { version = "1.0", features = ["derive"] }
 actix-web = "4"
 actix-web-location = { version = "0.7.0", features = ["actix-web-v4"] }
+dotenvy = "0.15.7"
 
 [dependencies.prisma-client-rust]
 git = "https://github.com/Brendonovich/prisma-client-rust"
