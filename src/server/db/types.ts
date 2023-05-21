@@ -13,7 +13,7 @@ export type Event = {
     city: string | null;
     country: string | null;
     eventType: string;
-    websiteUrl: string;
+    host: string;
 };
 export type Example = {
     id: Generated<number>;

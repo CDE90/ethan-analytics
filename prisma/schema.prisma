@@ -1,6 +1,11 @@
 generator kysely {
-    provider = "prisma-kysely"
+    provider = "pnpm prisma-kysely"
     output   = "../src/server/db"
+}
+
+generator rust {
+    provider = "cargo prisma"
+    output   = "../src/db.rs"
 }
 
 datasource db {
