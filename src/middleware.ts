@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { db } from "~/server/db";
 
 export default authMiddleware({
-    publicRoutes: ["/", "/api", "/api/event", "/api/event/(.*)"],
+    publicRoutes: ["/", "/api/event", "/api/seed"],
     async afterAuth(auth, req, evt) {
         if (!auth.userId && !auth.isPublicRoute) {
             const signInUrl = new URL("/sign-in", req.url);
