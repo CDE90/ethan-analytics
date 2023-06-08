@@ -1,6 +1,8 @@
 import { authMiddleware } from "@clerk/nextjs";
 import { NextResponse } from "next/server";
 import { db } from "~/server/db";
+import { users } from "./server/schema";
+import { eq } from "drizzle-orm";
 
 export default authMiddleware({
     publicRoutes: ["/", "/api/event", "/api/seed"],
@@ -11,14 +13,16 @@ export default authMiddleware({
             return NextResponse.redirect(signInUrl);
         } else if (auth.userId) {
             const user = await db
-                .selectFrom("User")
-                .select(["id", "clerkId"])
-                .where("clerkId", "=", auth.userId)
-                .execute();
+                .select({
+                    id: users.id,
+                    clerkId: users.clerkId,
+                })
+                .from(users)
+                .where(eq(users.clerkId, auth.userId));
 
             if (user.length === 0) {
                 await db
-                    .insertInto("User")
+                    .insert(users)
                     .values({ clerkId: auth.userId })
                     .execute();
             }

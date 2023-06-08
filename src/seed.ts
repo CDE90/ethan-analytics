@@ -1,13 +1,14 @@
 import { db } from "./server/db";
+import { events, users, websites } from "./server/schema";
 
 export async function seed() {
     console.log("Seeding...");
 
-    await db.deleteFrom("Event").execute();
-    await db.deleteFrom("Website").execute();
-    await db.deleteFrom("User").execute();
+    await db.delete(events).execute();
+    await db.delete(websites).execute();
+    await db.delete(users).execute();
 
-    const users = [
+    const usersSample = [
         {
             id: 10,
             clerkId: "user1",
@@ -30,9 +31,9 @@ export async function seed() {
         },
     ];
 
-    await db.insertInto("User").values(users).execute();
+    await db.insert(users).values(usersSample).execute();
 
-    const websites = [
+    const websitesSample = [
         {
             id: 1,
             url: "https://google.com",
@@ -95,11 +96,11 @@ export async function seed() {
         },
     ];
 
-    await db.insertInto("Website").values(websites).execute();
+    await db.insert(websites).values(websitesSample).execute();
 
-    const events = [];
+    const eventsSample = [];
 
-    for (const website of websites) {
+    for (const website of websitesSample) {
         for (let i = 0; i < Math.floor(Math.random() * 10000) + 50; i++) {
             // get a random date between 1/1/2020 and 1/1/2021
             const start = new Date(2020, 0, 1);
@@ -128,9 +129,11 @@ export async function seed() {
 
             const referrer =
                 // @ts-ignore
-                websites[Math.floor(Math.random() * websites.length)].url;
+                websitesSample[
+                    Math.floor(Math.random() * websitesSample.length)
+                ].url;
 
-            events.push({
+            eventsSample.push({
                 id: i + website.id * 10000,
                 timestamp,
                 page: website.url,
@@ -145,7 +148,7 @@ export async function seed() {
         }
     }
 
-    await db.insertInto("Event").values(events).execute();
+    await db.insert(events).values(eventsSample).execute();
 
     console.log("Done seeding.");
 }

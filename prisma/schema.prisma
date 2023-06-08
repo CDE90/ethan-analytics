@@ -1,57 +1,46 @@
 generator kysely {
-    provider = "pnpm prisma-kysely"
-    output   = "../src/server/db"
+  provider = "pnpm prisma-kysely"
+  output   = "../src/server/db"
 }
 
 generator rust {
-    provider = "cargo prisma"
-    output   = "../src/db.rs"
+  provider = "cargo prisma"
+  output   = "../src/db.rs"
 }
 
 datasource db {
-    provider     = "mysql"
-    url          = env("DATABASE_URL")
-    relationMode = "prisma"
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
 }
 
-model Example {
-    id   Int    @id @default(autoincrement())
-    name String
-    age  Int
+model events {
+  id         BigInt    @id @unique(map: "id") @default(autoincrement()) @db.UnsignedBigInt
+  timestamp  DateTime? @db.DateTime(0)
+  page       String?   @db.VarChar(256)
+  user_agent String?   @default("") @db.VarChar(256)
+  referrer   String?   @default("") @db.VarChar(256)
+  region     String?   @default("") @db.VarChar(256)
+  city       String?   @default("") @db.VarChar(256)
+  country    String?   @default("") @db.VarChar(256)
+  event_type String?   @db.VarChar(256)
+  website_id Int?
+  host       String?   @db.VarChar(256)
+
+  @@index([page], map: "page_idx")
+  @@index([host], map: "host_idx")
 }
 
-model User {
-    id      Int    @id @default(autoincrement())
-    clerkId String @unique
-
-    Website Website[]
+model users {
+  id       BigInt  @id @unique(map: "id") @default(autoincrement()) @db.UnsignedBigInt
+  clerk_id String? @db.VarChar(256)
 }
 
-model Website {
-    id   Int    @id @default(autoincrement())
-    url  String @unique
-    name String
+model websites {
+  id      BigInt  @id @unique(map: "id") @default(autoincrement()) @db.UnsignedBigInt
+  url     String? @unique(map: "url_idx") @db.VarChar(256)
+  name    String? @db.VarChar(256)
+  user_id Int?
 
-    user   User    @relation(fields: [userId], references: [id])
-    userId Int
-    events Event[]
-
-    @@index([userId, url])
-}
-
-model Event {
-    id        Int      @id @default(autoincrement())
-    timestamp DateTime @default(now())
-    page      String
-    userAgent String?
-    referrer  String?
-    region    String?
-    city      String?
-    country   String?
-    eventType String
-
-    website Website @relation(fields: [host], references: [url])
-    host    String
-
-    @@index([host, page])
+  @@index([user_id], map: "user_id_idx")
 }
