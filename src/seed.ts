@@ -1,13 +1,14 @@
 import { db } from "./server/db";
+import { events, users, websites } from "./server/schema";
 
 export async function seed() {
     console.log("Seeding...");
 
-    await db.deleteFrom("Event").execute();
-    await db.deleteFrom("Website").execute();
-    await db.deleteFrom("User").execute();
+    await db.delete(events).execute();
+    await db.delete(websites).execute();
+    await db.delete(users).execute();
 
-    const users = [
+    const usersSample = [
         {
             id: 10,
             clerkId: "user1",
@@ -30,80 +31,81 @@ export async function seed() {
         },
     ];
 
-    await db.insertInto("User").values(users).execute();
+    await db.insert(users).values(usersSample).execute();
 
-    const websites = [
+    const websitesSample = [
         {
-            id: 1,
+            id: 0,
             url: "https://google.com",
             name: "Google",
             userId: 10,
         },
         {
-            id: 2,
+            id: 1,
             url: "https://facebook.com",
             name: "Facebook",
             userId: 11,
         },
         {
-            id: 3,
+            id: 2,
             url: "https://youtube.com",
             name: "YouTube",
             userId: 12,
         },
         {
-            id: 4,
+            id: 3,
             url: "https://wikipedia.org",
             name: "Wikipedia",
             userId: 13,
         },
         {
-            id: 5,
+            id: 4,
             url: "https://yahoo.com",
             name: "Yahoo",
             userId: 14,
         },
         {
-            id: 6,
+            id: 5,
             url: "https://reddit.com",
             name: "Reddit",
             userId: 10,
         },
         {
-            id: 7,
+            id: 6,
             url: "https://amazon.com",
             name: "Amazon",
             userId: 11,
         },
         {
-            id: 8,
+            id: 7,
             url: "https://twitter.com",
             name: "Twitter",
             userId: 12,
         },
         {
-            id: 9,
+            id: 8,
             url: "https://instagram.com",
             name: "Instagram",
             userId: 13,
         },
         {
-            id: 10,
+            id: 9,
             url: "https://fandom.com",
             name: "Fandom",
             userId: 14,
         },
     ];
 
-    await db.insertInto("Website").values(websites).execute();
+    await db.insert(websites).values(websitesSample).execute();
 
-    const events = [];
+    const maxEvents = 1_000_000;
 
-    for (const website of websites) {
-        for (let i = 0; i < Math.floor(Math.random() * 10000) + 50; i++) {
-            // get a random date between 1/1/2020 and 1/1/2021
-            const start = new Date(2020, 0, 1);
-            const end = new Date(2021, 0, 1);
+    for (const website of websitesSample) {
+        const eventsSample = [];
+
+        for (let i = 0; i < Math.floor(Math.random() * maxEvents) + 50; i++) {
+            const start = new Date(2022, 10, 1);
+            const end = new Date(2023, 11, 1);
             const timestamp = new Date(
                 start.getTime() +
                     Math.random() * (end.getTime() - start.getTime())
@@ -128,10 +130,12 @@ export async function seed() {
 
             const referrer =
                 // @ts-ignore
-                websites[Math.floor(Math.random() * websites.length)].url;
+                websitesSample[
+                    Math.floor(Math.random() * websitesSample.length)
+                ].url;
 
-            events.push({
-                id: i + website.id * 10000,
+            eventsSample.push({
+                id: i + website.id * maxEvents,
                 timestamp,
                 page: website.url,
                 userAgent,
@@ -143,9 +147,8 @@ export async function seed() {
                 host: website.url,
             });
         }
+        await db.insert(events).values(eventsSample).execute();
     }
-
-    await db.insertInto("Event").values(events).execute();
 
     console.log("Done seeding.");
 }

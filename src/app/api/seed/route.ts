@@ -6,7 +6,9 @@ export async function GET(req: NextRequest) {
         return NextResponse.error();
     }
 
-    await seed();
+    // await seed();
 
-    return NextResponse.json({ message: "Successfully seeded dev DB!" });
+    // return NextResponse.json({ message: "Successfully seeded dev DB!" });
+
+    return NextResponse.json({ message: "Seeding is disabled for now." });
 }

@@ -1,6 +1,7 @@
 import { db } from "~/server/db";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { events } from "~/server/schema";
 
 export const runtime = "edge";
 
@@ -38,8 +39,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const city = location?.city || null;
     const country = location?.country || null;
 
-    await db
-        .insertInto("Event")
+    const a = await db
+        .insert(events)
         .values({
             userAgent,
             region,
@@ -54,10 +55,3 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     return NextResponse.json({});
 }
-
-// export async function GET(request: NextRequest): Promise<NextResponse> {
-//     console.log(request);
-//     const res = await request.json();
-
-//     return NextResponse.json(res);
-// }
