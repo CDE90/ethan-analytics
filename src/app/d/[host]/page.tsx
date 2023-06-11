@@ -176,7 +176,7 @@ export default async function DashboardPage({
         return <div>Website not found</div>;
     }
 
-    const groupBy: GroupBy = "day";
+    const groupBy = "day" as GroupBy;
 
     const eventsData = await getData(host, groupBy);
 
