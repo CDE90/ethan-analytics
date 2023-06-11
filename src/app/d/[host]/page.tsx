@@ -3,6 +3,8 @@ import { db } from "~/server/db";
 import { websites, events } from "~/server/schema";
 import { AreaChart, Card, Title } from "@tremor/react";
 
+export const runtime = "edge";
+
 type GroupBy = "hour" | "day" | "week" | "month" | "year";
 
 async function getData(host: string, groupBy: GroupBy) {
