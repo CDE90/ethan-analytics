@@ -5,7 +5,7 @@ import { AreaChart, Card, Title } from "@tremor/react";
 
 export const runtime = "edge";
 
-type GroupBy = "hour" | "day" | "week" | "month" | "year";
+type GroupBy = "hour" | "day" | "month" | "year";
 
 async function getData(host: string, groupBy: GroupBy) {
     let dateFrom;
@@ -15,9 +15,6 @@ async function getData(host: string, groupBy: GroupBy) {
             break;
         case "day":
             dateFrom = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-            break;
-        case "week":
-            dateFrom = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
             break;
         case "month":
             dateFrom = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000);
@@ -29,12 +26,12 @@ async function getData(host: string, groupBy: GroupBy) {
 
     const eventsData = await db
         .select({
-            "id": events.id,
-            "eventType": events.eventType,
-            "host": events.host,
-            "page": events.page,
-            "referrer": events.referrer,
-            "timestamp": events.timestamp,
+            id: events.id,
+            eventType: events.eventType,
+            host: events.host,
+            page: events.page,
+            referrer: events.referrer,
+            timestamp: events.timestamp,
         })
         .from(events)
         .where(
@@ -55,7 +52,7 @@ interface Event {
 }
 
 function getMonday(d: Date) {
-    const day = d.getDay()
+    const day = d.getDay();
     const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
 
     return new Date(d.setDate(diff));
@@ -65,7 +62,10 @@ function getMonth(d: Date) {
     return new Date(d.getFullYear(), d.getMonth(), 1);
 }
 
-function groupData<T extends Event>(data: T[], groupBy: GroupBy): { [key: string]: T[] } {
+function groupData<T extends Event>(
+    data: T[],
+    groupBy: GroupBy
+): { [key: string]: T[] } {
     switch (groupBy) {
         case "hour":
             return data.reduce((acc, event) => {
@@ -79,8 +79,7 @@ function groupData<T extends Event>(data: T[], groupBy: GroupBy): { [key: string
                     }
                 }
                 return acc;
-            }
-            , {} as { [key: string]: typeof data });
+            }, {} as { [key: string]: typeof data });
         case "day":
             return data.reduce((acc, event) => {
                 const day = event.timestamp?.toLocaleDateString();
@@ -93,23 +92,7 @@ function groupData<T extends Event>(data: T[], groupBy: GroupBy): { [key: string
                     }
                 }
                 return acc;
-            }
-            , {} as { [key: string]: typeof data });
-        case "week":
-            return data.reduce((acc, event) => {
-                // get the monday of the week
-                const week = getMonday(event.timestamp!).toLocaleDateString();
-
-                if (week) {
-                    if (acc[week]) {
-                        acc[week]?.push(event);
-                    } else {
-                        acc[week] = [event];
-                    }
-                }
-                return acc;
-            }
-            , {} as { [key: string]: typeof data });
+            }, {} as { [key: string]: typeof data });
         case "month":
             return data.reduce((acc, event) => {
                 const month = getMonth(event.timestamp!).toLocaleDateString();
@@ -122,8 +105,7 @@ function groupData<T extends Event>(data: T[], groupBy: GroupBy): { [key: string
                     }
                 }
                 return acc;
-            }
-            , {} as { [key: string]: typeof data });
+            }, {} as { [key: string]: typeof data });
         case "year":
             return data.reduce((acc, event) => {
                 const year = event.timestamp?.getFullYear().toString();
@@ -136,12 +118,9 @@ function groupData<T extends Event>(data: T[], groupBy: GroupBy): { [key: string
                     }
                 }
                 return acc;
-            }
-            , {} as { [key: string]: typeof data });
+            }, {} as { [key: string]: typeof data });
     }
 }
-
-
 
 function getChartData(data: { [key: number]: Event[] }, groupBy: GroupBy) {
     const chartData = Object.entries(data).map(([date, data]) => {
@@ -153,7 +132,6 @@ function getChartData(data: { [key: number]: Event[] }, groupBy: GroupBy) {
 
     return chartData;
 }
-
 
 export default async function DashboardPage({
     params,
@@ -206,14 +184,18 @@ export default async function DashboardPage({
             <p>Website ID: {websiteData[0]?.id}</p>
             <p>Website Name: {websiteData[0]?.name}</p>
             <Card>
-                <Title>Events by {
-                    groupBy === "hour" ? "Hour" :
-                        groupBy === "day" ? "Day" :
-                            groupBy === "week" ? "Week" :
-                                groupBy === "month" ? "Month" :
-                                    groupBy === "year" ? "Year" : ""
-
-                    }</Title>
+                <Title>
+                    Events by{" "}
+                    {groupBy === "hour"
+                        ? "Hour"
+                        : groupBy === "day"
+                        ? "Day"
+                        : groupBy === "month"
+                        ? "Month"
+                        : groupBy === "year"
+                        ? "Year"
+                        : ""}
+                </Title>
                 <AreaChart
                     className="h-72 mt-4"
                     data={chartData}
