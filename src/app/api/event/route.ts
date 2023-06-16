@@ -50,6 +50,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             host: data.domain,
             eventType: data.event,
             page: data.page,
+            timestamp: new Date(),
         })
         .execute();
 

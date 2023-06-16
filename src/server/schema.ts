@@ -32,7 +32,7 @@ export const events = mysqlTable(
     "events",
     {
         id: serial("id").primaryKey(),
-        timestamp: datetime("timestamp"),
+        timestamp: datetime("timestamp").notNull(),
         page: varchar("page", { length: 256 }),
         userAgent: varchar("user_agent", { length: 256 }).default(""),
         referrer: varchar("referrer", { length: 256 }).default(""),

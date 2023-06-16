@@ -10,17 +10,17 @@ datasource db {
 }
 
 model events {
-  id         BigInt    @id @unique(map: "id") @default(autoincrement()) @db.UnsignedBigInt
-  timestamp  DateTime? @db.DateTime(0)
-  page       String?   @db.VarChar(256)
-  user_agent String?   @default("") @db.VarChar(256)
-  referrer   String?   @default("") @db.VarChar(256)
-  region     String?   @default("") @db.VarChar(256)
-  city       String?   @default("") @db.VarChar(256)
-  country    String?   @default("") @db.VarChar(256)
-  event_type String?   @db.VarChar(256)
+  id         BigInt   @id @unique(map: "id") @default(autoincrement()) @db.UnsignedBigInt
+  timestamp  DateTime @db.DateTime(0)
+  page       String?  @db.VarChar(256)
+  user_agent String?  @default("") @db.VarChar(256)
+  referrer   String?  @default("") @db.VarChar(256)
+  region     String?  @default("") @db.VarChar(256)
+  city       String?  @default("") @db.VarChar(256)
+  country    String?  @default("") @db.VarChar(256)
+  event_type String?  @db.VarChar(256)
   website_id Int?
-  host       String?   @db.VarChar(256)
+  host       String?  @db.VarChar(256)
 
   @@index([page], map: "page_idx")
   @@index([host], map: "host_idx")
