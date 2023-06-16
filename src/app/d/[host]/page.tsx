@@ -1,91 +1,177 @@
+"use client";
+
 import { eq, gte, and, lte } from "drizzle-orm";
-import { db } from "~/server/db";
+// import { db } from "~/server/db";
 import { websites, events } from "~/server/schema";
 import { AreaChart, Card, DateRangePicker, Title } from "@tremor/react";
-import DatePicker from "~/components/date-picker";
+import DatePicker, { DateRangePickerValue } from "~/components/date-picker";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+    sub,
+    startOfToday,
+    startOfMonth,
+    startOfYear,
+    endOfToday,
+} from "date-fns";
 
 export const runtime = "edge";
 
 type GroupBy = "mins" | "hour" | "day" | "month";
 
-type DateRangePickerValue = {
-    from: Date;
-    to: Date;
-    selectValue?: string;
-};
+// async function getData(host: string, dateRange: DateRangePickerValue) {
+//     const eventsData = await db
+//         .select({
+//             id: events.id,
+//             eventType: events.eventType,
+//             host: events.host,
+//             page: events.page,
+//             referrer: events.referrer,
+//             timestamp: events.timestamp,
+//         })
+//         .from(events)
+//         .where(
+//             and(
+//                 gte(events.timestamp, dateRange.from),
+//                 lte(events.timestamp, dateRange.to),
+//                 eq(events.host, host)
+//             )
+//         )
+//         .orderBy(events.timestamp)
+//         .execute();
 
-async function getData(host: string, dateRange: DateRangePickerValue) {
-    const eventsData = await db
-        .select({
-            id: events.id,
-            eventType: events.eventType,
-            host: events.host,
-            page: events.page,
-            referrer: events.referrer,
-            timestamp: events.timestamp,
-        })
-        .from(events)
-        .where(
-            and(
-                gte(events.timestamp, dateRange.from),
-                lte(events.timestamp, dateRange.to),
-                eq(events.host, host)
-            )
-        )
-        .orderBy(events.timestamp)
-        .execute();
+//     return eventsData;
+// }
 
-    return eventsData;
+const HOUR = 60 * 60 * 1000;
+const DAY = 24 * HOUR;
+const YEAR = 365 * DAY;
+
+function getDefaultDates(searchParams?: { [key: string]: string | undefined }) {
+    if (searchParams && searchParams.selectValue) {
+        const selectValue = searchParams.selectValue;
+        if (selectValue === "Last 1 hour") {
+            return {
+                from: sub(startOfToday(), { hours: 1 }),
+                to: new Date(),
+            };
+        } else if (selectValue === "Yesterday") {
+            return {
+                from: sub(startOfToday(), { days: 1 }),
+                to: sub(endOfToday(), { days: 1 }),
+            };
+        } else if (selectValue === "Today") {
+            return {
+                from: startOfToday(),
+                to: endOfToday(),
+            };
+        } else if (selectValue === "Last 7 days") {
+            return {
+                from: sub(startOfToday(), { days: 7 }),
+                to: new Date(),
+            };
+        } else if (selectValue === "Last 30 days") {
+            return {
+                from: sub(startOfToday(), { days: 30 }),
+                to: new Date(),
+            };
+        } else if (selectValue === "Month to Date") {
+            return {
+                from: startOfMonth(startOfToday()),
+                to: new Date(),
+            };
+        } else if (selectValue === "Last 90 days") {
+            return {
+                from: sub(startOfToday(), { days: 90 }),
+                to: new Date(),
+            };
+        } else if (selectValue === "Last 1 year") {
+            return {
+                from: sub(startOfToday(), { years: 1 }),
+                to: new Date(),
+            };
+        } else if (selectValue === "Year to Date") {
+            return {
+                from: startOfYear(startOfToday()),
+                to: new Date(),
+            };
+        } else {
+            return {
+                from: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
+                to: new Date(),
+            };
+        }
+    } else if (searchParams && searchParams.from && searchParams.to) {
+        return {
+            from: searchParams.from
+                ? new Date(searchParams.from)
+                : new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
+            to: searchParams.to ? new Date(searchParams.to) : new Date(),
+        };
+    } else {
+        return {
+            from: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
+            to: new Date(),
+        };
+    }
 }
 
-interface Event {
-    timestamp: Date | null;
-}
+function generateArray(dateRange: DateRangePickerValue) {
+    const fromDate = dateRange.from ?? getDefaultDates().from;
+    const toDate = dateRange.to ?? getDefaultDates().to;
 
-function getMonth(d: Date) {
-    return new Date(d.getFullYear(), d.getMonth(), 1);
-}
-
-function generateArray(dateRange: DateRangePickerValue, groupBy: GroupBy) {
-    const timeDiff = dateRange.to.getTime() - dateRange.from.getTime();
+    const timeDiff = toDate.getTime() - fromDate.getTime();
     let dates: Date[] = [];
 
-    const startDate = new Date(dateRange.from);
+    let groupBy: GroupBy;
+    if (timeDiff <= HOUR) {
+        // group by mins
+        groupBy = "mins";
+    } else if (timeDiff <= DAY) {
+        // group by hour
+        groupBy = "hour";
+    } else if (timeDiff <= YEAR) {
+        // group by day
+        groupBy = "day";
+    } else {
+        // group by month
+        groupBy = "month";
+    }
+
+    const startDate = new Date(fromDate);
     startDate.setDate(1);
     startDate.setHours(0, 0, 0, 0);
 
-    const endDate = new Date(dateRange.to);
+    const endDate = new Date(toDate);
     endDate.setDate(1);
     endDate.setHours(0, 0, 0, 0);
 
     // generate a list of dates between the start and end date
     if (groupBy === "mins") {
-        const mins = Math.floor(timeDiff / (60 * 1000));
+        const mins = Math.floor(timeDiff / (60 * 1000)) + 1;
         dates = new Array(mins).fill(0).map((_, i) => {
-            const date = new Date(dateRange.from.getTime() + i * 60 * 1000);
+            const date = new Date(fromDate.getTime() + i * 60 * 1000);
             date.setSeconds(0, 0); // Set seconds and milliseconds to zero
             return date;
         });
     } else if (groupBy === "hour") {
-        const hours = Math.floor(timeDiff / (60 * 60 * 1000));
+        const hours = Math.floor(timeDiff / (60 * 60 * 1000)) + 1;
         dates = new Array(hours).fill(0).map((_, i) => {
-            const date = new Date(
-                dateRange.from.getTime() + i * 60 * 60 * 1000
-            );
+            const date = new Date(fromDate.getTime() + i * 60 * 60 * 1000);
             date.setMinutes(0, 0, 0); // Set minutes, seconds, and milliseconds to zero
             return date;
         });
     } else if (groupBy === "day") {
-        const days = Math.floor(timeDiff / (24 * 60 * 60 * 1000));
+        const days = Math.floor(timeDiff / (24 * 60 * 60 * 1000)) + 1;
         dates = new Array(days).fill(0).map((_, i) => {
-            const date = new Date(
-                dateRange.from.getTime() + i * 24 * 60 * 60 * 1000
-            );
+            const date = new Date(fromDate.getTime() + i * 24 * 60 * 60 * 1000);
             date.setHours(0, 0, 0, 0); // Set time to 00:00:00
             return date;
         });
     } else if (groupBy === "month") {
-        const months = endDate.getMonth() - startDate.getMonth();
+        const months =
+            (endDate.getMonth() - startDate.getMonth() + 1) *
+            ((endDate.getFullYear() - startDate.getFullYear()) * 12);
         dates = new Array(months).fill(0).map((_, i) => {
             return new Date(
                 startDate.getFullYear(),
@@ -98,103 +184,40 @@ function generateArray(dateRange: DateRangePickerValue, groupBy: GroupBy) {
     return dates;
 }
 
-const HOUR = 60 * 60 * 1000;
-const DAY = 24 * HOUR;
-const YEAR = 365 * DAY;
-
-// function groupData<T extends Event>(
-//     data: T[],
-//     dateRange: DateRangePickerValue
-// ): { [key: string]: T[] } {
-//     // depending on the length of the date range, group by hour, day, or month
-//     // 0-60 mins: group by mins
-//     // 1-24 hours: group by hour
-//     // 1-90 days: group by day
-//     // 90 days+: group by month
-//     const timeDiff = dateRange.to.getTime() - dateRange.from.getTime();
-
-//     // for each, generate an array of dates equally spaced between the start and end date
-//     // with differences based on the group by
-
-//     if (timeDiff <= HOUR) {
-//         // group by mins
-//     } else if (timeDiff <= DAY) {
-//         // group by hour
-//     } else if (timeDiff <= YEAR) {
-//         // group by day
-//     } else {
-//         // group by month
-//     }
-
-//     switch (groupBy) {
-//         case "hour":
-//             return data.reduce((acc, event) => {
-//                 const hour = `${event.timestamp?.getHours()}:00`;
-
-//                 if (hour) {
-//                     if (acc[hour]) {
-//                         acc[hour]?.push(event);
-//                     } else {
-//                         acc[hour] = [event];
-//                     }
-//                 }
-//                 return acc;
-//             }, {} as { [key: string]: typeof data });
-//         case "day":
-//             return data.reduce((acc, event) => {
-//                 const day = event.timestamp?.toLocaleDateString();
-
-//                 if (day) {
-//                     if (acc[day]) {
-//                         acc[day]?.push(event);
-//                     } else {
-//                         acc[day] = [event];
-//                     }
-//                 }
-//                 return acc;
-//             }, {} as { [key: string]: typeof data });
-//         case "month":
-//             return data.reduce((acc, event) => {
-//                 const month = getMonth(event.timestamp!).toLocaleDateString();
-
-//                 if (month) {
-//                     if (acc[month]) {
-//                         acc[month]?.push(event);
-//                     } else {
-//                         acc[month] = [event];
-//                     }
-//                 }
-//                 return acc;
-//             }, {} as { [key: string]: typeof data });
-//     }
-// }
-
-function getChartData(data: { [key: number]: Event[] }, groupBy: GroupBy) {
-    const chartData = Object.entries(data).map(([date, data]) => {
-        return {
-            date: date,
-            events: data.length,
-        };
-    });
-
-    return chartData;
-}
-
-// export default async function DashboardPage({
-//     params,
-// }: {
-//     params: { host: string };
-// }) {
 export default function DashboardPage({
     params,
+    searchParams,
 }: {
     params: { host: string };
+    searchParams: { [key: string]: string | string[] | undefined };
 }) {
-    // const [dateRange, setDateRange] = useState<DateRangePickerValue>({
-    //     from: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-    //     to: new Date(Date.now()),
-    // });
-    // const [dates, setDates] = useState<Date[]>([]);
+    const [dateRange, setDateRange] = useState<DateRangePickerValue>({
+        ...getDefaultDates(
+            Array.isArray(searchParams) ? searchParams[0] : searchParams
+        ),
+    });
+    const [dates, setDates] = useState<Date[]>([]);
+
+    const router = useRouter();
+
+    useEffect(() => {
+        setDates(generateArray(dateRange));
+
+        const newUrl = new URL(window.location.href);
+        if (dateRange.selectValue) {
+            newUrl.searchParams.set("selectValue", dateRange.selectValue ?? "");
+            newUrl.searchParams.delete("from");
+            newUrl.searchParams.delete("to");
+        } else {
+            newUrl.searchParams.delete("selectValue");
+            newUrl.searchParams.set(
+                "from",
+                dateRange.from?.toISOString() ?? ""
+            );
+            newUrl.searchParams.set("to", dateRange.to?.toISOString() ?? "");
+        }
+        router.push(newUrl.href, undefined);
+    }, [dateRange, router, searchParams]);
 
     // console.log(params.host);
     // let host = params.host;
@@ -282,5 +305,5 @@ export default function DashboardPage({
     //     </div>
     // );
 
-    return <DatePicker />;
+    return <DatePicker dateRange={dateRange} setDateRange={setDateRange} />;
 }
