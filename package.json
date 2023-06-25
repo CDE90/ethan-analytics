@@ -12,7 +12,7 @@
         "@clerk/nextjs": "^4.19.1",
         "@clerk/themes": "^1.7.5",
         "@planetscale/database": "^1.7.0",
-        "@t3-oss/env-nextjs": "^0.4.0",
+        "@t3-oss/env-nextjs": "^0.6.0",
         "@types/eslint": "^8.40.0",
         "@types/node": "20.1.2",
         "@types/react": "18.2.13",
